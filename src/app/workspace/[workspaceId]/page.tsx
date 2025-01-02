@@ -1,15 +1,8 @@
-import {param} from "ts-interface-checker";
-
-interface WorkspaceIdPageParamsProps {
-    params: {
-        workspaceId: string;
-    }
-}
-
-export default function WorkspaceIdPage({params}: WorkspaceIdPageParamsProps) {
+"use client";
+export default function WorkspaceIdPage() {
     return (
         <div>
-            ID: {params.workspaceId}
+            Workspace Id page
         </div>
     )
 }
