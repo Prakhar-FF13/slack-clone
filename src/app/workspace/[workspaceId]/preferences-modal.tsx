@@ -16,6 +16,7 @@ import {Button} from "@/components/ui/button";
 import {useWorkspaceId} from "@/hooks/use-workspace-id";
 import {toast} from "sonner";
 import {useRouter} from "next/navigation";
+import {useConfirm} from "@/hooks/use-confirm";
 
 interface PreferencesModalProps {
     open: boolean;
@@ -30,6 +31,10 @@ export const PreferencesModal = ({
 }: PreferencesModalProps) => {
     const workspaceId = useWorkspaceId();
     const router = useRouter();
+    const [ConfirmDialog, confirm] = useConfirm(
+        "Are you sure",
+        "This action is irreversible"
+    );
 
     const [value, setValue] = useState(initialValue);
     const [editOpen, setEditOpen] = useState(false);
@@ -53,7 +58,13 @@ export const PreferencesModal = ({
         })
     }
 
-    const handleRemove = () =>{
+    const handleRemove = async () =>{
+        const ok = await confirm();
+
+        if (!ok) {
+            return;
+        }
+
         removeWorkspace({
             id: workspaceId,
         }, {
@@ -69,6 +80,8 @@ export const PreferencesModal = ({
     }
 
     return (
+        <>
+            <ConfirmDialog />
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className={"p-0 bg-gray-50 overflow-hidden"}>
                 <DialogHeader className={"p-4 border-b bg-white"}>
@@ -133,5 +146,6 @@ export const PreferencesModal = ({
                 </div>
             </DialogContent>
         </Dialog>
+        </>
     );
 }
