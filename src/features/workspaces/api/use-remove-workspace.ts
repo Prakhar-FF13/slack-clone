@@ -12,11 +12,10 @@ type Options = {
 
 type RequestType = {
     id: Id<"workspaces">,
-    name: string
 };
 type ResponseType = Id<"workspaces"> | null;
 
-export const useUpdateWorkspace = () => {
+export const useRemoveWorkspace = () => {
     const [data, setData] = useState<ResponseType>();
     const [error, setError] = useState<Error | null>();
 
@@ -27,7 +26,7 @@ export const useUpdateWorkspace = () => {
     const isError = useMemo(() => status === "error", [status]);
     const isSettled = useMemo(() => status === "settled", [status]);
 
-    const mutation = useMutation(api.workspaces.update);
+    const mutation = useMutation(api.workspaces.remove);
 
     const mutate = useCallback(async (values: RequestType, options?: Options) => {
         try {
