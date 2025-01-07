@@ -166,6 +166,7 @@ export default function Editor({
                 {!!image && (
                     <div className={"p-2"}>
                         <div className={"relative size-[62px] flex items-center justify-center group/image"}>
+                            <Hint label={"Remove Image"}>
                             <button
                                 onClick={() => {
                                     setImage(null);
@@ -175,6 +176,7 @@ export default function Editor({
                             >
                                 <XIcon className={"size-3.5"}/>
                             </button>
+                            </Hint>
                             <Image
                                 src={URL.createObjectURL(image)}
                                 alt={"Uploaded image"}
