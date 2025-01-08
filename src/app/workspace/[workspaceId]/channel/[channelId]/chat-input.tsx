@@ -5,6 +5,8 @@ import {useCreateMessage} from "@/features/messages/api/use-create-message";
 import {useWorkspaceId} from "@/hooks/use-workspace-id";
 import {useChannelId} from "@/hooks/use-channel-id";
 import {toast} from "sonner";
+import {useGenerateUploadUrl} from "@/features/upload/api/use-generate-upload-url";
+import {Id} from "../../../../../../convex/_generated/dataModel";
 
 const Editor = dynamic(() => import("@/components/editor"), {ssr: false})
 
@@ -12,23 +14,61 @@ interface ChatInputProps {
     placeholder: string;
 }
 
+type CreateMessageValues = {
+    channelId: Id<"channels">,
+    workspaceId: Id<"workspaces">,
+    body: string,
+    image?: Id<"_storage"> | undefined,
+}
+
 export const ChatInput = ({placeholder}: ChatInputProps) => {
     const [editorKey, setEditorKey] = useState(0);
-    const [isPending, setIsPending] = useState<boolean>(true);
+    const [isPending, setIsPending] = useState<boolean>(false);
 
     const editorRef = useRef<Quill | null>(null);
     const {mutate: createMessage} = useCreateMessage();
     const workspaceId = useWorkspaceId()
     const channelId = useChannelId()
 
+    const {mutate: generateUploadUrl} = useGenerateUploadUrl();
+
     const handleSubmit = async ({body, image}: {body: string, image: File | null}) => {
         try {
             setIsPending(true);
-            createMessage({
-                workspaceId,
+            editorRef?.current?.enable(false);
+
+            const values: CreateMessageValues = {
                 channelId,
+                workspaceId,
                 body,
-            }, {
+                image: undefined
+            }
+
+            if (image) {
+                const url = await generateUploadUrl({}, {throwOnError: true});
+
+                if (!url) {
+                    throw new Error("Could not generate upload url");
+                }
+
+                const result = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": image.type
+                    },
+                    body: image
+                })
+
+                if (!result.ok) {
+                    throw new Error("Could not generate upload url");
+                }
+
+                const {storageId} = await result.json();
+
+                values.image = storageId;
+            }
+
+            createMessage(values, {
                 throwOnError: true,
             });
 
@@ -38,6 +78,7 @@ export const ChatInput = ({placeholder}: ChatInputProps) => {
             console.log(error);
         } finally {
             setIsPending(false);
+            editorRef?.current?.enable(true);
         }
 
     }
